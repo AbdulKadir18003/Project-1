@@ -1,0 +1,147 @@
+import java.util.*;
+
+class Sweet {
+    private String name;
+    private double price;
+    private int quantity;
+
+    public Sweet(String name, double price, int quantity) {
+        this.name = name;
+        this.price = price;
+        this.quantity = quantity;
+    }
+
+    public void updateQuantity(int quantity) {
+        this.quantity += quantity;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+}
+
+class SweetShop {
+    private Map<String, Sweet> sweets = new HashMap<>();
+
+    public void addSweet(Sweet sweet) {
+        sweets.putIfAbsent(sweet.getName(), sweet);
+        sweets.get(sweet.getName()).updateQuantity(sweet.getQuantity());
+    }
+
+    public boolean sellSweet(String name, int quantity) {
+        Sweet sweet = sweets.get(name);
+        if (sweet != null && sweet.getQuantity() >= quantity) {
+            sweet.updateQuantity(-quantity);
+            return true;
+        }
+        return false;
+    }
+
+    public Collection<Sweet> listSweets() {
+        return sweets.values();
+    }
+}
+
+class SweetShopController {
+    private SweetShop shop;
+
+    public SweetShopController() {
+        shop = new SweetShop();
+    }
+
+    public void addSweet(String name, double price, int quantity) {
+        shop.addSweet(new Sweet(name, price, quantity));
+    }
+
+    public String sellSweet(String name, int quantity) {
+        return shop.sellSweet(name, quantity) 
+                ? "Sold " + quantity + " of " + name 
+                : "Not enough stock for " + name;
+    }
+
+    public Collection<Sweet> listSweets() {
+        return shop.listSweets();
+    }
+}
+
+class SweetShopView {
+    private Scanner scanner = new Scanner(System.in);
+    private SweetShopController controller;
+
+    public SweetShopView(SweetShopController controller) {
+        this.controller = controller;
+    }
+
+    public void displaySweets() {
+        Collection<Sweet> sweets = controller.listSweets();
+        if (sweets.isEmpty()) {
+            System.out.println("No sweets available.");
+        } else {
+            sweets.forEach(sweet -> System.out.println("Sweet: " + sweet.getName() + ", Price: " + sweet.getPrice() + ", Quantity: " + sweet.getQuantity()));
+        }
+    }
+
+    public String getInput(String prompt) {
+        System.out.print(prompt);
+        return scanner.nextLine();
+    }
+
+    public int getIntInput(String prompt) {
+        System.out.print(prompt);
+        return scanner.nextInt();
+    }
+
+    public void displayMessage(String message) {
+        System.out.println(message);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        SweetShopController controller = new SweetShopController();
+        SweetShopView view = new SweetShopView(controller);
+
+        while (true) {
+            System.out.println("\nSweet Shop Management");
+            System.out.println("1. Add Sweet");
+            System.out.println("2. Sell Sweet");
+            System.out.println("3. List Sweets");
+            System.out.println("4. Exit");
+
+            int choice = view.getIntInput("Enter your choice: ");
+            view.getInput("");
+
+            switch (choice) {
+                case 1:
+                    String name = view.getInput("Enter sweet name: ");
+                    double price = view.getIntInput("Enter sweet price: ");
+                    int quantity = view.getIntInput("Enter quantity: ");
+                    controller.addSweet(name, price, quantity);
+                    view.displayMessage("Added " + quantity + " of " + name);
+                    break;
+                case 2:
+                    name = view.getInput("Enter sweet name: ");
+                    quantity = view.getIntInput("Enter quantity to sell: ");
+                    String message = controller.sellSweet(name, quantity);
+                    view.displayMessage(message);
+                    break;
+                case 3:
+                    view.displaySweets();
+                    break;
+                case 4:
+                    System.out.println("Exiting Sweet Shop Management");
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+}
